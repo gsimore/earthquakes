@@ -203,10 +203,9 @@ class StationEvent:
         """
         Prints out the results. :)
         """
-        message = 'For the seismic event at {},\
-                    \n The difference between p- and s-wave arrival times was: {} seconds.\
-                    \n Therefore, the distance from the earthquake is {} kilometers.'
-        print(message.format(self.p_arrival_time, self.self.delta_sec, self.dist_to_eq))
+        message = 'The difference between p- and s-wave arrival times was: {} seconds.\
+                   \nThe distance to the earthquake is {} kilometers.'
+        print(message.format(self.delta_sec, self.dist_to_eq))
 
 
 class Earthquake:
