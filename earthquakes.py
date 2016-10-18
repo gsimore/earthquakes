@@ -1,61 +1,21 @@
 """
-'Earth is shaking'
+See README.md for the docs.
 
-Monty   >> "OMG AN EARTHQUAKE"
-You     >> "Duck!!"
+eureka = SeismicStation('Eureka, CA', (40.8021, -124.1637))
+elko = SeismicStation('Elko, NV', (40.8324, -115.7631))
+vegas = SeismicStation('Las Vegas, NV', (36.1699, -115.1398))
 
-'House crashes down'
+event1 = StationEvent("08:00:00", "08:00:49", 250)
+event2 = StationEvent("08:00:00", "08:01:12", 50)
+event3 = StationEvent("08:00:00", "08:01:04", 100)
 
-Monty   >> "Where on earth did that come from?"
-You     >> "I don't know yet Monty, but we'd better find out."
+eureka.add_event(event1)
+elko.add_event(event2)
+vegas.add_event(event3)
 
-'Synchronous evil laughter'
-
-First, let's determine how far away the earthquake was.
-    1. Obtain P- and S-wave arrival times from three locations.
-    2. Calculate the difference between P- and S-wave arrival times at each location (seconds).
-    3. Use the difference in arrival time to determine distance (in km) from the earthquake at each location.
-
-Let's also determine the earthquake's magnitude (Richter scale):
-    4. Determine the amplitude of the strongest wave (mm).
-    5. Use the difference in arrival time and the amplitude to determine the magnitude of the earthquake.
-
-Now, let's locate the epicenter:
-    6. Draw radius around each location using the distance found in 3.
-    7. Determine where the 3 circles intersect.
-
-** reminder, GPS N and E are +, S and W are -
-*** advanced option: write program that analyzes the seismograms for you,
-    determines p- and s-wave arrival times and amplitude of strongest wave.
-
-event = (p-arrival-time, s-arrival-time, max_amp)
-station = ('location', coords)
-coords = (lat, lon)  # lat, lon in degrees
-
->>> eureka = SeismicStation('Eureka, CA', (40.8021, -124.1637))
->>> elko = SeismicStation('Elko, NV', (40.8324, -115.7631))
->>> vegas = SeismicStation('Las Vegas, NV', (36.1699, -115.1398))
-
->>> event1 = StationEvent("08:00:00", "08:00:49", 250)
->>> event2 = StationEvent("08:00:00", "08:01:12", 50)
->>> event3 = StationEvent("08:00:00", "08:01:04", 100)
-
->>> eureka.add_event(event1)
->>> elko.add_event(event2)
->>> vegas.add_event(event3)
-
->>> the_great_san_antonio_eq = Earthquake(eureka, elko, vegas)
->>> the_great_san_antonio_eq.calc_epicenter()
-
-
-where
-d = distance to earthquake
-tS = S-wave arrival time
-tP = P-wave ""
-vS = velocity of S-wave
-vP = velocity of p-wave
-
-d = (tS-tP/(1/vS-1/vP)
+the_great_san_antonio_eq = Earthquake(eureka, elko, vegas)
+the_great_san_antonio_eq.calc_epicenter()
+(35.72362494709903, -121.68306381403882)
 
 """
 
@@ -71,7 +31,7 @@ earthR = 6371  # kilometers
 def haversine(point1, point2):
     """
     Calculates the distance between two points on the earth.
-    >>> haversine((52.2296756, 21.0122287), (52.406374, 16.9251681))
+    haversine((52.2296756, 21.0122287), (52.406374, 16.9251681))
     278.4581750754194
     """
     lat1, lat2 = radians(point1[0]), radians(point2[0])
@@ -101,15 +61,16 @@ class SeismicStation:
         """
         Adds a single event to the events list.
         """
-
         self.events.append(event)
-        return self
+        return None
 
     def __str__(self):
-        return self.name
+        result = '{0.name} at {0.coords}'.format(self)
+        return result
 
     def __repr__(self):
-        return self.name
+        result = '{0.name}'.format(self)
+        return result
 
 
 class StationEvent:
@@ -119,25 +80,18 @@ class StationEvent:
     """
 
     def __init__(self, p_arrival_time, s_arrival_time, max_amplitude):
-        p_time = datetime.strptime(p_arrival_time, "%H:%M:%S")
-        s_time = datetime.strptime(s_arrival_time, "%H:%M:%S")
-        delta = s_time - p_time
-        VS = float(3.67)  # avg velocity of s-waves in CA crustal rocks (km/sec)
-        VP = float(6.34)  # avg velocity of p-waves in CA crustal rocks (km/sec)
-        # Your conversion factor from arrival time difference (sec) to distance km
-        Vsp = (VS * VP)/(VP - VS)
-
+        p_time, s_time = self.parse_station_time(p_arrival_time, s_arrival_time)
+        self.delta = s_time - p_time  # The TimeDelta Object
+        self.delta_sec = self.delta.seconds  # The Seconds only
         self.p_arrival_time = p_time
         self.s_arrival_time = s_time
-        self.delta_sec = delta.seconds
         self.max_amplitude = max_amplitude  # in millimeters
-        self.Vsp = Vsp
+        self.Vsp = self.wave_velocity()  # Can override VS and VP here.
         # Method resolution order below
-        self.dist_to_eq = StationEvent.calc_distance(self)
-        self.magnitude = StationEvent.calc_magnitude(self)
-        self.seismic_moment = StationEvent.calc_seismic_moment(self)
-        self.energy = StationEvent.calc_seismic_energy(self)
-        self.print_report = StationEvent.print_report(self)
+        self.dist_to_eq = self.calc_distance()
+        self.magnitude = self.calc_magnitude()
+        self.seismic_moment = self.calc_seismic_moment()
+        self.energy = self.calc_seismic_energy()
 
     def __str__(self):
         message = "{} | Tsp(s): {}, Amp(mm): {}"
@@ -146,6 +100,24 @@ class StationEvent:
     def __repr__(self):
         message = "{} | Tsp(s): {}, Amp(mm): {}"
         return message.format(self.p_arrival_time, self.delta_sec, self.max_amplitude)
+
+    def wave_velocity(self, VS=3.67, VP=6.34):
+        """
+        Calculates the wave velocity based upon assumtions VS and VP.
+        """
+        VS = float(VS)  # avg velocity of s-waves in CA crustal rocks (km/sec)
+        VP = float(VP)  # avg velocity of p-waves in CA crustal rocks (km/sec)
+        # Your conversion factor from arrival time difference (sec) to distance km
+        Vsp = (VS * VP)/(VP - VS)
+        return Vsp
+
+    def parse_station_time(self, p_time, s_time):
+        """
+        parse_station_time("08:00:00", "08:00:49")
+        """
+        p_time = datetime.strptime(p_time, "%H:%M:%S")
+        s_time = datetime.strptime(s_time, "%H:%M:%S")
+        return p_time, s_time
 
     def calc_distance(self):
         """
