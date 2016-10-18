@@ -40,10 +40,6 @@ coords = (lat, lon)  # lat, lon in degrees
 >>> event2 = StationEvent("08:00:00", "08:01:12", 50)
 >>> event3 = StationEvent("08:00:00", "08:01:04", 100)
 
->>> event1.calc_distance()
->>> event2.calc_distance()
->>> event3.calc_distance()
-
 >>> eureka.add_event(event1)
 >>> elko.add_event(event2)
 >>> vegas.add_event(event3)
@@ -65,8 +61,9 @@ d = (tS-tP/(1/vS-1/vP)
 
 
 from datetime import datetime
-from math import log, sin, cos, atan2, asin, degrees, radians, sqrt, pow
+from math import log, sin, cos, atan2, asin, degrees, radians, sqrt
 import numpy
+
 
 earthR = 6371  # kilometers
 
@@ -88,6 +85,10 @@ def haversine(point1, point2):
 
 
 class SeismicStation:
+    """
+    Class that creates the objects for a seismic station with a 'name', and
+    a set of gps coordinates, lat and lon (degrees)
+    """
 
     def __init__(self, name, coords):
         self.name = name
@@ -100,6 +101,7 @@ class SeismicStation:
         """
         Adds a single event to the events list.
         """
+
         self.events.append(event)
         return self
 
@@ -115,15 +117,15 @@ class StationEvent:
     An object pertaining to a single seismic event at a single seismic recording
     station.
     """
-    VS = float(3.67)  # avg velocity of s-waves in CA crustal rocks (km/sec)
-    VP = float(6.34)  # avg velocity of p-waves in CA crustal rocks (km/sec)
-    # Your conversion factor from arrival time difference (sec) to distance km
-    Vsp = (VS * VP)/(VP - VS)
-    
+
     def __init__(self, p_arrival_time, s_arrival_time, max_amplitude):
         p_time = datetime.strptime(p_arrival_time, "%H:%M:%S")
         s_time = datetime.strptime(s_arrival_time, "%H:%M:%S")
         delta = s_time - p_time
+        VS = float(3.67)  # avg velocity of s-waves in CA crustal rocks (km/sec)
+        VP = float(6.34)  # avg velocity of p-waves in CA crustal rocks (km/sec)
+        # Your conversion factor from arrival time difference (sec) to distance km
+        Vsp = (VS * VP)/(VP - VS)
 
         self.p_arrival_time = p_time
         self.s_arrival_time = s_time
@@ -131,10 +133,11 @@ class StationEvent:
         self.max_amplitude = max_amplitude  # in millimeters
         self.Vsp = Vsp
         # Method resolution order below
-        self.dist_to_eq = None
-        self.magnitude = None
-        self.seismic_moment = None
-        self.energy = None
+        self.dist_to_eq = StationEvent.calc_distance(self)
+        self.magnitude = StationEvent.calc_magnitude(self)
+        self.seismic_moment = StationEvent.calc_seismic_moment(self)
+        self.energy = StationEvent.calc_seismic_energy(self)
+        self.print_report = StationEvent.print_report(self)
 
     def __str__(self):
         message = "{} | Tsp(s): {}, Amp(mm): {}"
@@ -150,9 +153,9 @@ class StationEvent:
         one seismic station. Using assumption of average velocity in California
         crustal rocks for Vsp. (adaptable for location of stations or earthquake)
         """
+
         self.dist_to_eq = float(self.delta_sec * self.Vsp) # distance in km
         return self.dist_to_eq
-
 
     def calc_magnitude(self):
         """
@@ -178,11 +181,15 @@ class StationEvent:
         either the magnitude or the seismic moment.
         """
         if method == 'magnitude':
-            """ E = 10 ^ (11.8 + (1.5 * Magnitude)) """
+            """
+            E = 10 ^ (11.8 + (1.5 * Magnitude))
+            """
             result = 10 ** (11.8+(1.5*self.magnitude))
 
         elif method == 'moment':
-            """ E = Moment / 20,000 """
+            """
+            E = Moment / 20,000
+            """
             result = self.seismic_moment / 20000
 
         else:
@@ -196,9 +203,10 @@ class StationEvent:
         """
         Prints out the results. :)
         """
-        message = 'The difference between p- and s-wave arrival times was: {} seconds.\
-                   \nThe distance to the earthquake is {} kilometers.'
-        print(message.format(self.delta_sec, self.dist_to_eq))
+        message = 'For the seismic event at {},\
+                    \n The difference between p- and s-wave arrival times was: {} seconds.\
+                    \n Therefore, the distance from the earthquake is {} kilometers.'
+        print(message.format(self.p_arrival_time, self.self.delta_sec, self.dist_to_eq))
 
 
 class Earthquake:
@@ -211,7 +219,7 @@ class Earthquake:
         self.station1 = args[0]
         self.station2 = args[1]
         self.station3 = args[2]
-        self.epicenter = None
+        self.epicenter = Earthquake.calc_epicenter(self)
 
     def calc_epicenter(self):
         # assumes elevation = 0, TODO: incorporate elevation of seismic stations
@@ -228,46 +236,46 @@ class Earthquake:
         # using authalic sphere, if considering ellipsoid, this step is slightly different
         # Convert geodetic Lat/Long to ECEF xyz
         #   Convert Lat/Long(radians) to ECEF
-        xA = earthR *(cos(LatA) * cos(LonA))
-        yA = earthR *(cos(LatA) * sin(LonA))
-        zA = earthR *(sin(LatA))
+        xA = earthR * (cos(LatA) * cos(LonA))
+        yA = earthR * (cos(LatA) * sin(LonA))
+        zA = earthR * (sin(LatA))
 
-        xB = earthR *(cos(LatB) * cos(LonB))
-        yB = earthR *(cos(LatB) * sin(LonB))
-        zB = earthR *(sin(LatB))
+        xB = earthR * (cos(LatB) * cos(LonB))
+        yB = earthR * (cos(LatB) * sin(LonB))
+        zB = earthR * (sin(LatB))
 
-        xC = earthR *(cos(LatC) * cos(LonC))
-        yC = earthR *(cos(LatC) * sin(LonC))
-        zC = earthR *(sin(LatC))
+        xC = earthR * (cos(LatC) * cos(LonC))
+        yC = earthR * (cos(LatC) * sin(LonC))
+        zC = earthR * (sin(LatC))
 
         P1 = numpy.array([xA, yA, zA])
         P2 = numpy.array([xB, yB, zB])
         P3 = numpy.array([xC, yC, zC])
 
-        #from wikipedia
-        #transform to get circle 1 at origin
-        #transform to get circle 2 on x axis
+        # from wikipedia
+        # transform to get circle 1 at origin
+        # transform to get circle 2 on x axis
         ex = (P2 - P1)/(numpy.linalg.norm(P2 - P1))
         i = numpy.dot(ex, P3 - P1)
         ey = (P3 - P1 - i*ex)/(numpy.linalg.norm(P3 - P1 - i*ex))
-        ez = numpy.cross(ex,ey)
+        ez = numpy.cross(ex, ey)
         d = float(numpy.linalg.norm(P2 - P1))
         j = numpy.dot(ey, P3 - P1)
 
-        #from wikipedia
-        #plug and chug using above values
-        x = (pow(rA,2) - pow(rB,2) + pow(d,2))/(2*d)
-        y = ((pow(rA,2) - pow(rC,2) + pow(i,2) + pow(j,2))/(2*j)) - ((i/j)*x)
+        # from wikipedia
+        # plug and chug using above values
+        x = ((rA**2) - (rB**2) + (d**2))/(2*d)
+        y = (((rA**2) - (rC**2) + (i**2) + (j**2))/(2*j)) - ((i/j)*x)
 
         # only one case shown here
-        z = numpy.sqrt(pow(rA,2) - pow(x,2) - pow(y,2))
-        #triPt is an array with ECEF x,y,z of trilateration point
-        triPt = P1 + x*ex + y*ey + z*ez
+        z = sqrt(abs((rA**2) - (x**2) - (y**2)))
+        # triPt is an array with ECEF x,y,z of trilateration point
+        triPt = P1 + (x*ex) + (y*ey) + (z*ez)
 
-        #convert back to lat/long from ECEF
-        #convert to degrees
+        # convert back to lat/long from ECEF
+        # convert to degrees
         lat = degrees(asin(triPt[2] / earthR))
-        lon = degrees(atan2(triPt[1],triPt[0]))
+        lon = degrees(atan2(triPt[1], triPt[0]))
         epicenter = (lat, lon)
 
         self.epicenter = epicenter
