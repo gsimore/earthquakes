@@ -29,7 +29,8 @@ _'Synchronous evil laughter'_
 
 #### reminder, GPS N and E are +, S and W are negative(-)
 
-Advanced option: write program that analyzes the seismograms for you.determines p- and s-wave arrival times and amplitude of strongest wave.
+Advanced option: write program that analyzes the seismograms for you.
+determines p- and s-wave arrival times and amplitude of strongest wave.
 
 ### Formula Variables
 ```
@@ -39,6 +40,8 @@ coords = (lat, lon)  # lat, lon in degrees
 ```
 
 ```
+other variable key:
+
 d = distance to earthquake
 tS = S-wave arrival time
 tP = P-wave ""

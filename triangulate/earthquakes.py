@@ -126,7 +126,7 @@ class StationEvent:
         crustal rocks for Vsp. (adaptable for location of stations or earthquake)
         """
 
-        self.dist_to_eq = float(self.delta_sec * self.Vsp) # distance in km
+        self.dist_to_eq = float(self.delta_sec * self.Vsp)  # distance in km
         return self.dist_to_eq
 
     def calc_magnitude(self):
@@ -136,7 +136,7 @@ class StationEvent:
         """
         result = log(self.max_amplitude) + (3*log(8*self.delta_sec)-2.92)
         self.magnitude = result
-        return self.magnitude # richter scale 1 - 5
+        return self.magnitude  # richter scale 1 - 5
 
     def calc_seismic_moment(self):
         """
@@ -145,7 +145,7 @@ class StationEvent:
         """
         result = 10 ** ((3/2)*(self.magnitude+16))
         self.seismic_moment = result
-        return self.seismic_moment # in units of dyne-cm
+        return self.seismic_moment  # in units of dyne-cm
 
     def calc_seismic_energy(self, method='moment'):
         """
@@ -193,7 +193,8 @@ class Earthquake:
         self.epicenter = Earthquake.calc_epicenter(self)
 
     def calc_epicenter(self):
-        # assumes elevation = 0, TODO: incorporate elevation of seismic stations
+        # assumes elevation = 0
+        # TODO: incorporate elevation of seismic stations
         LatA = radians(self.station1.coords[0])  # lat in radians
         LonA = radians(self.station1.coords[1])  # lon in radians
         rA = self.station1.events[0].dist_to_eq  # get the circle radius
@@ -206,7 +207,7 @@ class Earthquake:
 
         # using authalic sphere, if considering ellipsoid, this step is slightly different
         # Convert geodetic Lat/Long to ECEF xyz
-        #   Convert Lat/Long(radians) to ECEF
+        #  Convert Lat/Long(radians) to ECEF
         xA = earthR * (cos(LatA) * cos(LonA))
         yA = earthR * (cos(LatA) * sin(LonA))
         zA = earthR * (sin(LatA))
