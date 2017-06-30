@@ -2,22 +2,13 @@
 By Gabby
 """
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from .triangulate.earthquakes import SeismicStation, StationEvent, Earthquake
-
-
-app = Flask(__name__)
-app.debug = True
 import requests
 
-@app.route("/")
-def map():
-    """
-    Template view | Google Maps
-    """
-    return render_template('a-map.html', name='llamas')
+app = Flask(__name__, static_url_path='')
+app.debug = True
 
-stations = list()
 
 @app.route("/calculate", methods=['POST'])
 def calculate():
@@ -39,4 +30,13 @@ def calculate():
     p_arrival_time = request.form["p_arrival_time"]
     max_amplitude = request.form["max_amplitude"]
 
-    return render_template('a-map.html', stations=stations)
+    return jsonify(stations=stations, seismic_station=seismic_station)
+
+@app.route("/")
+def map():
+    """
+    Template view | Google Maps
+    """
+    return render_template('a-map.html', name='llamas')
+
+stations = list()

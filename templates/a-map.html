@@ -2,10 +2,25 @@
 <html>
   <head>
     <script src="static/js/map.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="{{url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
     <link href="static/css/map.css" rel="stylesheet">
   </head>
 
   <body>
+    <script type=text/javascript>
+      $(function() {
+        $('input#encode').bind('click', function() {
+          $.getJSON($SCRIPT_ROOT + '/calculate', {
+            address: $('input[name="address"]').val(),
+          }, function(data) {
+            $("#seismic_station").text(data.result);
+          });
+          return false;
+        });
+      });
+    </script>
+
     <h3>My Google Maps Demo {{ name }} </h3>
 
     <container class="input-output-container">
@@ -64,7 +79,7 @@
           <br>
           <!-- Address encoder -->
           <input id="address" type="textbox" value="Elko, NV" name="address">
-          <input type="button" value="Encode" onclick="codeAddress()">
+          <input id="encode" type="button" value="Encode" onclick="codeAddress()">
 
         </form>
       </section>
@@ -75,6 +90,9 @@
             <th> Station </th>
             <th> Latitude </th>
             <th> Longitude </th>
+          </tr>
+          <tr>
+            <th id="seismic_station">?</th>
           </tr>
           {% for station in stations %}
           <tr>
