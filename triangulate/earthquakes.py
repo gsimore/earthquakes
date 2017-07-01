@@ -50,7 +50,7 @@ class SeismicStation:
     a set of gps coordinates, lat and lon (degrees)
     """
 
-    def __init__(self, name, coords):
+    def __init__(self, name, coords: tuple):
         self.name = name
         self.coords = coords
         self.latitude = coords[0]

@@ -1,4 +1,25 @@
 #eq-map {
-   height: 700px;
-   width: 100%;
+    height: 700px;
+    width: 100%;
+}
+
+.input-output-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.data {
+}
+
+.arrival-time {
+    text-align: right;
+}
+
+.arrival-time:valid {
+    border: 1px solid green;
+}
+
+.arrival-time:invalid {
+    border: 1px solid red;
 }

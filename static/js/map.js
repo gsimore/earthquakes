@@ -17,7 +17,7 @@ function initMap() {
 }
 
 function codeAddress() {
-   var address = document.getElementById('address').value;
+    var address = document.getElementById('station_address').value;
    geocoder.geocode({'address': address}, function(results, status) {
      if (status == 'OK') {
        map.setCenter(results[0].geometry.location);

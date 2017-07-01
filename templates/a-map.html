@@ -1,138 +1,139 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="static/js/map.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="{{url_for('static', filename='jquery.js') }}">\x3C/script>')</script>
-    <link href="static/css/map.css" rel="stylesheet">
-  </head>
-
-  <body>
+<head>
+    <!-- Import static files -->
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <link href="{{ url_for('static', filename='css/map.css') }}" rel="stylesheet">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='jquery/jquery.js') }}"></script>
     <script type=text/javascript>
-      $(function() {
-        $('input#encode').bind('click', function() {
-          $.getJSON($SCRIPT_ROOT + '/calculate', {
-            address: $('input[name="address"]').val(),
-          }, function(data) {
-            $("#seismic_station").text(data.result);
-          });
-          return false;
-        });
-      });
+        $SCRIPT_ROOT = {
+        {
+            request.script_root | tojson | safe
+        }
+        }
+        ;
+
     </script>
 
-    <h3>My Google Maps Demo {{ name }} </h3>
+    <!-- Bootstrap -->
+    <script src="{{ url_for('static', filename='js/geocode.js') }}"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-    <container class="input-output-container">
+</head>
 
-      <section class="input-section data">
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <span>About</span>
+    </div>
+</nav>
+
+<container class="input-output-container">
+
+    <section class="input-section data">
         <form action="/calculate" method="POST">
 
-          <!-- Station One -->
-          <fieldset name="station_location1">
-              <input id="station" class="station" type="text" placeholder="City, State or Nickname" name="station_name1" required>
-            <label>
-              Latitude
-              <input id="latitude" class="station coordinate" type="text" placeholder="40.8021" name="latitude1" required>
-            </label>
-            <label>
-              Longitude
-              <input id="longitude" class="station coordinate" type="text" placeholder="-124.1637" name="longitude1" required>
-            </label>
-          </fieldset>
+            <!-- Station One -->
 
-          <!-- Station Two -->
-          <fieldset name="station_location2">
-              <input id="station" class="station" type="text" placeholder="City, State or Nickname" name="station_name2" required>
-            <label>
-              Latitude
-              <input id="latitude" class="station coordinate" type="text" placeholder="40.8021" name="latitude2" required>
-            </label>
-            <label>
-              Longitude
-              <input id="longitude" class="station coordinate" type="text" placeholder="-124.1637" name="longitude2" required>
-            </label>
-          </fieldset>
+            <br>
 
-          <!-- Station Three -->
-          <fieldset name="station_location3">
-              <input id="station" class="station" type="text" placeholder="City, State or Nickname" name="station_name3" required>
-            <label>
-              Latitude
-              <input id="latitude" class="station coordinate" type="text" placeholder="40.8021" name="latitude3" required>
-            </label>
-            <label>
-              Longitude
-              <input id="longitude" class="station coordinate" type="text" placeholder="-124.1637" name="longitude3" required>
-            </label>
-          </fieldset>
 
-          <!-- Event One -->
-          <fieldset name="station_event1">
-            <input id="s-arrival" class="time event" type="text" placeholder="S-wave Arrival HH:MM:SS" name="s_arrival_time" required pattern="\d\d:\d\d:\d\d">
-            <input id="p-arrival" class="time event" type="text" placeholder="P-wave Arrival HH:MM:SS" name="p_arrival_time" required pattern="\d\d:\d\d:\d\d">
-            <input id="max_amplitude" class="event" type="text" placeholder="Maximum amplitude, mm" name="max_amplitude" required>
-          </fieldset>
-
-          <button>Submit</button>
-
-          <br>
-          <!-- Address encoder -->
-          <input id="address" type="textbox" value="Elko, NV" name="address">
-          <input id="encode" type="button" value="Encode" onclick="codeAddress()">
+            <!-- <input id="encode" type="submit" value="Encode"> -->
+            <!-- onclick="codeAddress()" -->
 
         </form>
-      </section>
+    </section>
 
-      <section class="output-section data">
-        <table>
-          <tr>
-            <th> Station </th>
-            <th> Latitude </th>
-            <th> Longitude </th>
-          </tr>
-          <tr>
-            <th id="seismic_station">?</th>
-          </tr>
-          {% for station in stations %}
-          <tr>
-              <td>Test {{ station.name }}</td>
-              <td>Test{{ station.latitude }}</td>
-              <td>Test the table {{ station.longitude }}</td>
-          </tr>
-          {% endfor %}
-        </table>
-      </section>
+</container>
 
-    </container>
+<div class="container">
+    <h2>Station Entry</h2>
+    <p>Geocode the seismic stations below.</p>
+    <table id="geodata-table" class="table table-condensed">
+        <thead>
+        <tr>
+            <th>Station Location</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>P Wave Arrival</th>
+            <th>S Wave Arrival</th>
+            <th>Maximum Amplitude</th>
 
-    <style>
-      .input-output-container {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-      }
+        </tr>
+        </thead>
+        <tbody>
 
-      .data {
-      }
+        {% for i in range(1, 4) %}
+        <!-- Row {{ loop.counter }} -->
+        <tr id="station_entry_row_1" class="station-entry-row" data-active="disabled">
+            <td>
+                <div class="input-group">
+                <span class="input-group-addon">
+                  <input name="checkbox" type="checkbox" aria-label="...">
+                </span>
+                    <input name="name" id="station_address_1" class="form-control" data-station='1' type="textbox"
+                           value="Eureka, CA" name="station_address_1">
+                </div><!-- /input-group -->
+            </td>
+            <td>
+                <div class="input-group">
+                    <input name="latitude" type="number" class="form-control" placeholder="40.8021">
+                    <span class="input-group-addon">°</span>
+                </div>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input name="longitude" type="number" class="form-control" placeholder="-124.1637">
+                    <span class="input-group-addon">°</span>
+                </div>
+            </td>
+            <td>
+                <input name="s_wave" type="text" class="form-control arrival-time" placeholder="HH:MM:SS"
+                       pattern="(\d{2}:){2}\d{2}">
+            </td>
+            <td>
+                <input name="p_wave" type="text" class="form-control arrival-time" placeholder="HH:MM:SS"
+                       pattern="(\d{2}:){2}\d{2}">
+            </td>
+            <td>
+                <div class="input-group">
+                    <input name="max_amplitude" type="number" class="form-control" placeholder="250.00">
+                    <span class="input-group-addon" id="maximum_amplitude">mm</span>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
 
-      .time {
+        </tbody>
+    </table>
+    <button id="add-station-glyph" type="button" class="btn btn-default" aria-label="Left Align">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+    </button>
+    <button id="delete-station-glyph" type="button" class="btn btn-default" aria-label="Left Align">
+        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+    </button>
+    <button id="submit-data-glyph" type="button" class="btn btn-default" aria-label="Left Align">
+        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+    </button>
+</div>
 
-      }
+<div id="eq-map"></div>
 
-      .time:valid {
-        border: 1px solid green;
-      }
 
-      .time:invalid {
-        border: 1px solid red;
-      }
+<footer>
 
-    </style>
+    About
 
-    <div id="eq-map"></div>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9OX0ztoM73i9ZgUPJQQVKcmZrxSaRjts&callback=initMap"
-    type="text/javascript">
-    </script>
-  </body>
+</footer>
+
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9OX0ztoM73i9ZgUPJQQVKcmZrxSaRjts&callback=initMap"
+        type="text/javascript">
+</script>
+
+</body>
 </html>
