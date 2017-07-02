@@ -68,39 +68,40 @@
 
         {% for i in range(1, 4) %}
         <!-- Row {{ loop.counter }} -->
-        <tr id="station_entry_row_1" class="station-entry-row" data-active="disabled">
+        <tr id="station_entry_row_1" class="station-entry-row" data-active="enabled">
             <td>
                 <div class="input-group">
                 <span class="input-group-addon">
-                  <input name="checkbox" type="checkbox" aria-label="...">
+                  <input checked="true" name="checkbox" type="checkbox" aria-label="...">
                 </span>
-                    <input name="name" id="station_address_1" class="form-control" data-station='1' type="textbox"
+                    <input name="name" id="station_address_1" class="form-control station_address" data-station='1'
+                           type="textbox"
                            value="Eureka, CA" name="station_address_1">
                 </div><!-- /input-group -->
             </td>
             <td>
                 <div class="input-group">
-                    <input name="latitude" type="number" class="form-control" placeholder="40.8021">
+                    <input name="latitude" type="number" class="form-control" value="40.8021">
                     <span class="input-group-addon">°</span>
                 </div>
             </td>
             <td>
                 <div class="input-group">
-                    <input name="longitude" type="number" class="form-control" placeholder="-124.1637">
+                    <input name="longitude" type="number" class="form-control" value="-124.1637">
                     <span class="input-group-addon">°</span>
                 </div>
             </td>
             <td>
-                <input name="s_wave" type="text" class="form-control arrival-time" placeholder="HH:MM:SS"
+                <input name="p_arrival_time" type="text" class="form-control arrival-time" value="00:00:00"
                        pattern="(\d{2}:){2}\d{2}">
             </td>
             <td>
-                <input name="p_wave" type="text" class="form-control arrival-time" placeholder="HH:MM:SS"
+                <input name="s_arrival_time" type="text" class="form-control arrival-time" value="00:00:49"
                        pattern="(\d{2}:){2}\d{2}">
             </td>
             <td>
                 <div class="input-group">
-                    <input name="max_amplitude" type="number" class="form-control" placeholder="250.00">
+                    <input name="max_amplitude" type="number" class="form-control" value="250.00">
                     <span class="input-group-addon" id="maximum_amplitude">mm</span>
                 </div>
             </td>

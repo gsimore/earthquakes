@@ -23,6 +23,7 @@ the_great_san_antonio_eq.calc_epicenter()
 from datetime import datetime
 from math import log, sin, cos, atan2, asin, degrees, radians, sqrt
 import numpy
+from .exceptions import SeismicError
 
 
 earthR = 6371  # kilometers
@@ -42,6 +43,7 @@ def haversine(point1, point2):
     c = 2*atan2(sqrt(a), sqrt(1-a))
     distance = earthR * c
     return distance
+
 
 
 class SeismicStation:
@@ -246,7 +248,12 @@ class Earthquake:
 
         # convert back to lat/long from ECEF
         # convert to degrees
-        lat = degrees(asin(triPt[2] / earthR))
+        # TODO: ValueError: math domain error for asin()
+        try:
+            lat = degrees(asin(triPt[2] / earthR))
+        except ValueError:
+            raise SeismicError('Something went wrong in while triangulating. p- and s- wave values may be reversed.')
+
         lon = degrees(atan2(triPt[1], triPt[0]))
         epicenter = (lat, lon)
 
