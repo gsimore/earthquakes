@@ -10,7 +10,8 @@ function initMap() {
     var latlng = new google.maps.LatLng(-34.397, 150.644);
     var mapOptions = {
         zoom: 4,
-        center: latlng
+        center: latlng,
+        mapTypeId: 'terrain'
     };
     var marker = new google.maps.Marker({
         position: latlng,

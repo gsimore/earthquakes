@@ -39,6 +39,8 @@ def calculate():
         except ValueError:
             return jsonify(status="error", message="invalid time format")
 
+        #distance_to_earthquake = event.dist_to_eq
+
         station.add_event(event)
         stations[station.name] = station
 
@@ -47,10 +49,13 @@ def calculate():
         lat, lon = earthquake.calc_epicenter()
     except SeismicError as e:
         return jsonify(status="error", message=e.message)
+    #
+    # response = {
+    #     'epicenter': {'lat': lat, 'lon': lon},
+    #     'radius_1': 0,
+    #      }
 
-    epicenter = {'lat': lat, 'lon': lon}
-
-    return jsonify(status='success', epicenter=epicenter)
+    return jsonify(status='success', epicenter={'lat': lat, 'lon': lon})
 
 
 @app.route('/geocode', methods=['POST'])
@@ -68,6 +73,24 @@ def geocode():
         return jsonify(status="success", result=api_response_dict)
     else:
         return jsonify(status="error", message="something went wrong with geocoding.")
+
+@app.route('/make_event', methods=['POST'])
+def get_event_radius():
+    '''
+    Get the data for one row
+    '''
+    event_data = request.json.get('station_data')
+    p_wave = event_data['p_arrival_time']
+    s_wave = event_data['s_arrival_time']
+    max_amplitude = float(event_data['max_amplitude'])
+    event = StationEvent(p_arrival_time=p_wave, s_arrival_time=s_wave, max_amplitude=max_amplitude)
+    radius = event.dist_to_eq * 1000 # km to m
+    center = {
+        'lat': event_data['latitude'],
+        'lng': event_data['longitude']
+        }
+
+    return jsonify(status='success', radius=radius, center=center)
 
 
 @app.route("/")

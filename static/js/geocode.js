@@ -17,6 +17,60 @@ $(function () {
     }
 
     /* -------------- Data Entry  ----------------------------- */
+    function serialize_row(fields) {
+        // A single stations object.
+        let station_data = Object();
+        $.each(fields, function (index, field) {
+            let field_name = $(field).attr('name');
+            station_data[field_name] = $(field).val();
+        });
+        return station_data;
+    }
+
+
+    function check_row(row) {
+        // Check if the row is complete.
+        let $row = $(row);
+        let fields = $row.find('input');
+        $.each(fields, function (index, field) {
+            // console.log(index, field);
+            if ($(field).val() === '') {
+                return false;
+            }
+        });
+
+        let station_data = serialize_row(fields);
+
+        $.ajax({
+            url: '/make_event',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({'station_data': station_data}),
+            success: function (response) {
+                console.log(response.radius);
+                // let latlng = new google.maps.LatLng(Number(response.center.lat), Number(response.center.lng));
+                let position = {
+                                 lat: Number(response.center.lat),
+                                 lng:  Number(response.center.lng)
+                               };
+
+                let circle = new google.maps.Circle({
+                    radius: response.radius,
+                    map: map,
+                    center: position,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.35,
+                });
+            },
+            error: function (error) {
+                console.log(error);
+            },
+        });
+
+    }
 
 
     // POSTs the selected stations formdata
@@ -31,13 +85,7 @@ $(function () {
         $.each(stations, function (index, station) {
             let fields = $(station).find('input');
 
-            // A single stations object.
-            let station_data = Object();
-            $.each(fields, function (index, field) {
-                let field_name = $(field).attr('name');
-                station_data[field_name] = $(field).val();
-            });
-
+            let station_data = serialize_row(fields);
             // Appends this station to the data Object.
             data[`station_${index}`] = station_data;
 
@@ -123,11 +171,19 @@ $(function () {
 
     /* ----------------- Geocoding -------------------------*/
 
+    $('.calc-station-row').on('click', function (event) {
+        let $row = $(this).parents('tr');
+        check_row($row);
+    });
+
     $('input.station_address').on('keydown', function (event) {
-        if (event.which === 13 | event.keycode === 13) {
-            // They pressed return / enter.
-            let entry = $(this).val();
+        let is_tab = event.which === 9 | event.keycode === 9;
+        let is_return = event.which === 13 | event.keycode === 13;
+        if (is_tab | is_return) {
+            // They pressed return / enter or tab.
             let $row = $(this).parents('tr');
+
+            let entry = $(this).val();
 
             $.ajax({
                 url: '/geocode',
@@ -145,4 +201,5 @@ $(function () {
         }
 
     });
-});
+
+});    // ends on ready

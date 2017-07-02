@@ -6,15 +6,6 @@
     <link href="{{ url_for('static', filename='css/map.css') }}" rel="stylesheet">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='jquery/jquery.js') }}"></script>
-    <script type=text/javascript>
-        $SCRIPT_ROOT = {
-        {
-            request.script_root | tojson | safe
-        }
-        }
-        ;
-
-    </script>
 
     <!-- Bootstrap -->
     <script src="{{ url_for('static', filename='js/geocode.js') }}"></script>
@@ -61,6 +52,7 @@
             <th>P Wave Arrival</th>
             <th>S Wave Arrival</th>
             <th>Maximum Amplitude</th>
+            <th>&nbsp</th>
 
         </tr>
         </thead>
@@ -104,6 +96,11 @@
                     <input name="max_amplitude" type="number" class="form-control" value="250.00">
                     <span class="input-group-addon" id="maximum_amplitude">mm</span>
                 </div>
+            </td>
+            <td>
+                <button type="button" class="btn btn-default calc-station-row" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-screenshot" aria-hidden="true"></span>
+                </button>
             </td>
         </tr>
         {% endfor %}
