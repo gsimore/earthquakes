@@ -55,7 +55,7 @@ $(function () {
                                };
 
                 let circle = new google.maps.Circle({
-                    radius: response.radius,
+                    radius: response.radius, // gets radius in km, need radius in meters?
                     map: map,
                     center: position,
                     strokeColor: '#FF0000',

@@ -26,7 +26,7 @@ import numpy
 from .exceptions import SeismicError
 
 
-earthR = 6371  # kilometers
+earth_radius = 6371  # kilometers
 
 
 def haversine(point1, point2):
@@ -41,7 +41,7 @@ def haversine(point1, point2):
     delta_lon = lon2 - lon1
     a = (sin(delta_lat/2)**2) + (cos(lat1)*cos(lat2)*sin(delta_lon/2)**2)
     c = 2*atan2(sqrt(a), sqrt(1-a))
-    distance = earthR * c
+    distance = earth_radius * c
     return distance
 
 
@@ -105,12 +105,13 @@ class StationEvent:
     def wave_velocity(self, VS=3.67, VP=6.34):
         """
         Calculates the wave velocity based upon assumptions VS and VP.
+        VS = avg velocity of s-waves in CA crustal rocks (km/sec)
+        VP = avg velocity of p-waves in CA crustal rocks (km/sec)
         """
-        VS = float(VS)  # avg velocity of s-waves in CA crustal rocks (km/sec)
-        VP = float(VP)  # avg velocity of p-waves in CA crustal rocks (km/sec)
+
         # Your conversion factor from arrival time difference (sec) to distance km
-        Vsp = (VS * VP)/(VP - VS)
-        return Vsp
+        Vsp = (VS*VP) / (VP-VS)
+        return Vsp  # wave velocity in km/s
 
     def parse_station_time(self, p_time, s_time):
         """
@@ -209,69 +210,64 @@ class Earthquake:
         # TODO: incorporate elevation of seismic stations.
         # TODO: add method to find the focus (actual location within the Earth)
 
-        LatA = radians(self.station1.coords[0])  # latitude in radians
-        LonA = radians(self.station1.coords[1])  # longitude in radians
-        rA = self.station1.events[0].dist_to_eq  # get the circle radius A in Km
+        lat1 = radians(self.station1.coords[0])  # latitude in radians
+        lon1 = radians(self.station1.coords[1])  # longitude in radians
+        r1 = self.station1.events[0].dist_to_eq  # get the circle radius A in Km
 
-        LatB = radians(self.station2.coords[0])
-        LonB = radians(self.station2.coords[1])
-        rB = self.station2.events[0].dist_to_eq  # radius B in km
+        lat2 = radians(self.station2.coords[0])
+        lon2 = radians(self.station2.coords[1])
+        r2 = self.station2.events[0].dist_to_eq  # radius B in km
 
-        LatC = radians(self.station3.coords[0])
-        LonC = radians(self.station3.coords[1])
-        rC = self.station3.events[0].dist_to_eq  # radius C in km
+        lat3 = radians(self.station3.coords[0])
+        lon3 = radians(self.station3.coords[1])
+        r3 = self.station3.events[0].dist_to_eq  # radius C in km
 
         # using authalic sphere, if considering ellipsoid, this step is slightly different
-        # Convert geodetic Lat/Long to ECEF xyz
-        #  Convert Lat/Long(radians) to ECEF
-        xA = earthR * (cos(LatA) * cos(LonA))
-        yA = earthR * (cos(LatA) * sin(LonA))
-        zA = earthR * (sin(LatA))
+        # Convert geodetic lat & lon (radians) to ECEF xyz
+        x1 = earth_radius * (cos(lat1) * cos(lon1))
+        y1 = earth_radius * (cos(lat1) * sin(lon1))
+        z1 = earth_radius * (sin(lat1))
 
-        xB = earthR * (cos(LatB) * cos(LonB))
-        yB = earthR * (cos(LatB) * sin(LonB))
-        zB = earthR * (sin(LatB))
+        x2 = earth_radius * (cos(lat2) * cos(lon2))
+        y2 = earth_radius * (cos(lat2) * sin(lon2))
+        z2 = earth_radius * (sin(lat2))
 
-        xC = earthR * (cos(LatC) * cos(LonC))
-        yC = earthR * (cos(LatC) * sin(LonC))
-        zC = earthR * (sin(LatC))
+        x3 = earth_radius * (cos(lat3) * cos(lon3))
+        y3 = earth_radius * (cos(lat3) * sin(lon3))
+        z3 = earth_radius * (sin(lat3))
 
         # create an array of each point's xyz coordinates
-        P1 = numpy.array([xA, yA, zA])  # array for point 1
-        P2 = numpy.array([xB, yB, zB])
-        P3 = numpy.array([xC, yC, zC])
+        P1 = numpy.array([x1, y1, z1])  # array for point 1
+        P2 = numpy.array([x2, y2, z2])
+        P3 = numpy.array([x3, y3, z3])
 
-        # from wikipedia
         # intermediate step for calculating x,y,z coordinates.
-        # transform to get circle 1 at origin
-        # transform to get circle 2 on x axis
+        # transform to get circle 1 at origin, transform to get circle 2 on x axis
         ex = (P2 - P1)/(numpy.linalg.norm(P2 - P1))                 # coefficient for x coordinate
         i = numpy.dot(ex, P3 - P1)                                  # dot product of ex vs. the difference of the xyz arrays for point 1 and point 3
         ey = (P3 - P1 - i*ex)/(numpy.linalg.norm(P3 - P1 - i*ex))   # coefficient for y coordinate
         ez = numpy.cross(ex, ey)                                    # coefficient for z coordinate
-        d = float(numpy.linalg.norm(P2 - P1))                       #
-        j = numpy.dot(ey, P3 - P1)                                  #
+        d = float(numpy.linalg.norm(P2 - P1))
+        j = numpy.dot(ey, P3 - P1)
 
         # from wikipedia
         # Use above values to get final x, y, and z coordinates of the epicenter
-        x = ((rA**2) - (rB**2) + (d**2)) / (2*d)
-        y = (((rA**2) - (rC**2) + (i**2) + (j**2))/(2*j)) - ((i/j)*x)
+        x = ((r1**2) - (r2**2) + (d**2)) / (2*d)
+        y = (((r1**2) - (r3**2) + (i**2) + (j**2))/(2*j)) - ((i/j)*x)
+        z = sqrt(abs((r1**2) - (x**2) - (y**2)))
 
-        # only one case shown here
-        z = sqrt(abs((rA**2) - (x**2) - (y**2)))
-
-        # make an array with ECEF x,y,z of trilateration point (triPt)
-        triPt = P1 + (x*ex) + (y*ey) + (z*ez)
+        # make an array with ECEF x,y,z of trilateration point (tri_point)
+        tri_point = P1 + (x*ex) + (y*ey) + (z*ez)
 
         # convert back to lat/long from ECEF
         # convert from radians to degrees
         # TODO: ValueError: math domain error for asin()
         try:
-            lat = degrees(asin(triPt[2] / earthR))
+            lat = degrees(asin(tri_point[2] / earth_radius))
         except ValueError:
             raise SeismicError('Something went wrong while triangulating. p- and s- wave values may be reversed.')
 
-        lon = degrees(atan2(triPt[1], triPt[0]))
+        lon = degrees(atan2(tri_point[1], tri_point[0]))
         epicenter = (lat, lon)
 
         self.epicenter = epicenter
