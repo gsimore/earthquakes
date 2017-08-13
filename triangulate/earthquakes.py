@@ -45,7 +45,6 @@ def haversine(point1, point2):
     return distance
 
 
-
 class SeismicStation:
     """
     Class that creates the objects for a seismic station with a 'name', and
@@ -105,7 +104,7 @@ class StationEvent:
 
     def wave_velocity(self, VS=3.67, VP=6.34):
         """
-        Calculates the wave velocity based upon assumtions VS and VP.
+        Calculates the wave velocity based upon assumptions VS and VP.
         """
         VS = float(VS)  # avg velocity of s-waves in CA crustal rocks (km/sec)
         VP = float(VP)  # avg velocity of p-waves in CA crustal rocks (km/sec)
@@ -195,17 +194,32 @@ class Earthquake:
         self.epicenter = Earthquake.calc_epicenter(self)
 
     def calc_epicenter(self):
+        '''
+        Calculates the epicenter of the Earthquake with the following steps:
+        1. Gets the latitude (radians), longitude (radians), and radius (km) of each of the 3 seismic station events given
+        2. Converts the geodetic latitude and longitude to ECEF xyz coordinates.
+        3. Apply each X, Y, Z set of coordinates for each of the 3 points to it's own numpy array.
+        4. Individually calculate the X, Y, and Z coordinates of the epicenter.
+        5. Convert the ECEF xyz coordinates of the epicenter back to Geodetic Latitude and Longitude.
+
+        returns the location of the epicenter as a tuple (latitude, longitude)
+        '''
+
         # assumes elevation = 0
-        # TODO: incorporate elevation of seismic stations
-        LatA = radians(self.station1.coords[0])  # lat in radians
-        LonA = radians(self.station1.coords[1])  # lon in radians
-        rA = self.station1.events[0].dist_to_eq  # get the circle radius
+        # TODO: incorporate elevation of seismic stations.
+        # TODO: add method to find the focus (actual location within the Earth)
+
+        LatA = radians(self.station1.coords[0])  # latitude in radians
+        LonA = radians(self.station1.coords[1])  # longitude in radians
+        rA = self.station1.events[0].dist_to_eq  # get the circle radius A in Km
+
         LatB = radians(self.station2.coords[0])
         LonB = radians(self.station2.coords[1])
-        rB = self.station2.events[0].dist_to_eq
+        rB = self.station2.events[0].dist_to_eq  # radius B in km
+
         LatC = radians(self.station3.coords[0])
         LonC = radians(self.station3.coords[1])
-        rC = self.station3.events[0].dist_to_eq
+        rC = self.station3.events[0].dist_to_eq  # radius C in km
 
         # using authalic sphere, if considering ellipsoid, this step is slightly different
         # Convert geodetic Lat/Long to ECEF xyz
@@ -222,37 +236,40 @@ class Earthquake:
         yC = earthR * (cos(LatC) * sin(LonC))
         zC = earthR * (sin(LatC))
 
-        P1 = numpy.array([xA, yA, zA])
+        # create an array of each point's xyz coordinates
+        P1 = numpy.array([xA, yA, zA])  # array for point 1
         P2 = numpy.array([xB, yB, zB])
         P3 = numpy.array([xC, yC, zC])
 
         # from wikipedia
+        # intermediate step for calculating x,y,z coordinates.
         # transform to get circle 1 at origin
         # transform to get circle 2 on x axis
-        ex = (P2 - P1)/(numpy.linalg.norm(P2 - P1))
-        i = numpy.dot(ex, P3 - P1)
-        ey = (P3 - P1 - i*ex)/(numpy.linalg.norm(P3 - P1 - i*ex))
-        ez = numpy.cross(ex, ey)
-        d = float(numpy.linalg.norm(P2 - P1))
-        j = numpy.dot(ey, P3 - P1)
+        ex = (P2 - P1)/(numpy.linalg.norm(P2 - P1))                 # coefficient for x coordinate
+        i = numpy.dot(ex, P3 - P1)                                  # dot product of ex vs. the difference of the xyz arrays for point 1 and point 3
+        ey = (P3 - P1 - i*ex)/(numpy.linalg.norm(P3 - P1 - i*ex))   # coefficient for y coordinate
+        ez = numpy.cross(ex, ey)                                    # coefficient for z coordinate
+        d = float(numpy.linalg.norm(P2 - P1))                       #
+        j = numpy.dot(ey, P3 - P1)                                  #
 
         # from wikipedia
-        # plug and chug using above values
-        x = ((rA**2) - (rB**2) + (d**2))/(2*d)
+        # Use above values to get final x, y, and z coordinates of the epicenter
+        x = ((rA**2) - (rB**2) + (d**2)) / (2*d)
         y = (((rA**2) - (rC**2) + (i**2) + (j**2))/(2*j)) - ((i/j)*x)
 
         # only one case shown here
         z = sqrt(abs((rA**2) - (x**2) - (y**2)))
-        # triPt is an array with ECEF x,y,z of trilateration point
+
+        # make an array with ECEF x,y,z of trilateration point (triPt)
         triPt = P1 + (x*ex) + (y*ey) + (z*ez)
 
         # convert back to lat/long from ECEF
-        # convert to degrees
+        # convert from radians to degrees
         # TODO: ValueError: math domain error for asin()
         try:
             lat = degrees(asin(triPt[2] / earthR))
         except ValueError:
-            raise SeismicError('Something went wrong in while triangulating. p- and s- wave values may be reversed.')
+            raise SeismicError('Something went wrong while triangulating. p- and s- wave values may be reversed.')
 
         lon = degrees(atan2(triPt[1], triPt[0]))
         epicenter = (lat, lon)
