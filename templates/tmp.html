@@ -1,0 +1,49 @@
+<fieldset name="station_location1">
+    <input id="station" class="station" type="text" placeholder="City, State or Nickname" name="station_name1" required>
+    <label>
+        Latitude
+        <input id="latitude" class="station coordinate" type="text" placeholder="40.8021" name="latitude1" required>
+    </label>
+    <label>
+        Longitude
+        <input id="longitude" class="station coordinate" type="text" placeholder="-124.1637" name="longitude1" required>
+    </label>
+</fieldset>
+
+<!-- Station Two -->
+<fieldset name="station_location2">
+    <input id="station" class="station" type="text" placeholder="City, State or Nickname" name="station_name2" required>
+    <label>
+        Latitude
+        <input id="latitude" class="station coordinate" type="text" placeholder="40.8021" name="latitude2" required>
+    </label>
+    <label>
+        Longitude
+        <input id="longitude" class="station coordinate" type="text" placeholder="-124.1637" name="longitude2" required>
+    </label>
+</fieldset>
+
+<!-- Station Three -->
+<fieldset name="station_location3">
+    <input id="station" class="station" type="text" placeholder="City, State or Nickname" name="station_name3" required>
+    <label>
+        Latitude
+        <input id="latitude" class="station coordinate" type="text" placeholder="40.8021" name="latitude3" required>
+    </label>
+    <label>
+        Longitude
+        <input id="longitude" class="station coordinate" type="text" placeholder="-124.1637" name="longitude3" required>
+    </label>
+</fieldset>
+
+<!-- Event One -->
+<fieldset name="station_event1">
+    <input id="s-arrival" class="time event" type="text" placeholder="S-wave Arrival HH:MM:SS" name="s_arrival_time"
+           required pattern="\d\d:\d\d:\d\d">
+    <input id="p-arrival" class="time event" type="text" placeholder="P-wave Arrival HH:MM:SS" name="p_arrival_time"
+           required pattern="\d\d:\d\d:\d\d">
+    <input id="max_amplitude" class="event" type="text" placeholder="Maximum amplitude, mm" name="max_amplitude"
+           required>
+</fieldset>
+
+<button>Submit</button>

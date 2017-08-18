@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Import static files -->
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <link href="{{ url_for('static', filename='css/map.css') }}" rel="stylesheet">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='jquery/jquery.js') }}"></script>
+
+    <!-- Bootstrap -->
+    <script src="{{ url_for('static', filename='js/geocode.js') }}"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+
+<!--<nav class="navbar navbar-default navbar-fixed-top">-->
+    <!--<div class="container">-->
+        <!--<span>About</span>-->
+    <!--</div>-->
+<!--</nav>-->
+
+<container class="input-output-container">
+
+    <section class="input-section data">
+        <form action="/calculate" method="POST">
+
+            <!-- Station One -->
+
+            <br>
+
+
+            <!-- <input id="encode" type="submit" value="Encode"> -->
+            <!-- onclick="codeAddress()" -->
+
+        </form>
+    </section>
+
+</container>
+
+<div class="container">
+    <h2>Station Entry</h2>
+    <p>Geocode the seismic stations below.</p>
+    <table id="geodata-table" class="table table-condensed">
+        <thead>
+        <tr>
+            <th>Station Location</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>P Wave Arrival</th>
+            <th>S Wave Arrival</th>
+            <th>Maximum Amplitude</th>
+            <th>&nbsp</th>
+
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for i in range(1, 4) %}
+        <!-- Row {{ loop.counter }} -->
+        <tr id="station_entry_row_1" class="station-entry-row" data-active="enabled">
+            <td>
+                <div class="input-group">
+                <span class="input-group-addon">
+                  <input checked="true" name="checkbox" type="checkbox" aria-label="...">
+                </span>
+                    <input name="name" id="station_address_1" class="form-control station_address" data-station='1'
+                           type="textbox"
+                           value="Eureka, CA" name="station_address_1">
+                </div><!-- /input-group -->
+            </td>
+            <td>
+                <div class="input-group">
+                    <input name="latitude" type="number" class="form-control" value="40.8021">
+                    <span class="input-group-addon">°</span>
+                </div>
+            </td>
+            <td>
+                <div class="input-group">
+                    <input name="longitude" type="number" class="form-control" value="-124.1637">
+                    <span class="input-group-addon">°</span>
+                </div>
+            </td>
+            <td>
+                <input name="p_arrival_time" type="text" class="form-control arrival-time" value="00:00:00"
+                       pattern="(\d{2}:){2}\d{2}">
+            </td>
+            <td>
+                <input name="s_arrival_time" type="text" class="form-control arrival-time" value="00:00:49"
+                       pattern="(\d{2}:){2}\d{2}">
+            </td>
+            <td>
+                <div class="input-group">
+                    <input name="max_amplitude" type="number" class="form-control" value="250.00">
+                    <span class="input-group-addon" id="maximum_amplitude">mm</span>
+                </div>
+            </td>
+            <td>
+                <button type="button" class="btn btn-default calc-station-row" aria-label="Left Align">
+                    <span class="glyphicon glyphicon-screenshot" aria-hidden="true"></span>
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+    <button id="add-station-glyph" type="button" class="btn btn-default" aria-label="Left Align">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+    </button>
+    <button id="delete-station-glyph" type="button" class="btn btn-default" aria-label="Left Align">
+        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+    </button>
+    <button id="submit-data-glyph" type="button" class="btn btn-default" aria-label="Left Align">
+        <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+    </button>
+</div>
+
+<div id="eq-map"></div>
+
+
+<footer>
+
+    About
+
+</footer>
+
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB9OX0ztoM73i9ZgUPJQQVKcmZrxSaRjts&callback=initMap"
+        type="text/javascript">
+</script>
+
+</body>
+</html>
