@@ -10,4 +10,4 @@ MarkupSafe==1.0
 numpy==1.13.0
 requests==2.18.1
 urllib3==1.21.1
-Werkzeug==0.12.2
+Werkzeug==0.15.3
